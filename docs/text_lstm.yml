@@ -1,0 +1,17 @@
+tags:
+  - name: Predict Text Sentiment LSTM
+get:
+  description: Teks yang akan dipredict menggunakan LSTM
+parameters:
+  - name: text
+    in: formData
+    required: true
+    type: string
+responses:
+    '200':
+      description: Successful response
+    '400':
+      description: Bad Request
+    '500':
+      description: Internal Server Error
+
