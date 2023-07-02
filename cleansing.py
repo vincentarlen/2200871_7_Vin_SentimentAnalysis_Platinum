@@ -1,5 +1,6 @@
 import re
 import pandas as pd
+from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory # pip install sastrawi
 
 def fix_word(text):
     return ' '.join([kamus_dict[word] if word in kamus_dict else word for word in text.split(' ')])
@@ -20,9 +21,21 @@ def remove_punctuation(text):
      text = re.sub(r' +', ' ', text.lower().lstrip("0123456789").strip())
      return text
 
+def remove_stopwords(text):
+    factory = StopWordRemoverFactory()
+    stopwords = factory.get_stop_words()
+
+    words = text.split()
+    filtered_words = [word for word in words if word.lower() not in stopwords]
+    filtered_text = ' '.join(filtered_words)
+
+    return filtered_text
+
+
 def preprocessing(text):
      text = remove_unnecessaryChar(text)
      text = remove_punctuation(text)
+     text = remove_stopwords(text)
      text = fix_word(text)
      return text
 
@@ -38,7 +51,7 @@ df.replace('', pd.NA, inplace=True)
 df.dropna(inplace=True)
 df.reset_index(drop=True, inplace=True)
 
-print(df["text"].head(30))
+# print(df["text"].head(30))
 # final = pd.DataFrame(df)
 # final.to_csv('try.csv')
 
