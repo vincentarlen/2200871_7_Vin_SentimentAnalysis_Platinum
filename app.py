@@ -31,6 +31,7 @@ swagger_config = {
 swagger = Swagger(app, template=swagger_template,
                   config=swagger_config)
 
+
 @app.route('/', methods=['GET'])
 def hello_world():
     json_response = {
@@ -47,7 +48,7 @@ def hello_world():
 @app.route('/text-nn', methods=['POST'])
 def pred_text_nn():
 
-    text = cleansing.preprocessing(request.form.get('text'))    
+    text = cleansing.preprocessing(request.form.get('text'))
 
     pred = nn.predict_sentiment(text)
 
@@ -71,11 +72,11 @@ def pred_file_nn():
     # Import file csv ke Pandas
     df = pd.read_csv(file, encoding="latin-1")
 
-
     # Lakukan cleansing pada teks
     df['text_preprocessed'] = df['text'].apply(cleansing.preprocessing)
     # predict
-    df['predicted_sentiment'] = df['text_preprocessed'].apply(nn.predict_sentiment)
+    df['predicted_sentiment'] = df['text_preprocessed'].apply(
+        nn.predict_sentiment)
 
     pred = list(zip(df['text'], df['predicted_sentiment']))
 
@@ -88,13 +89,14 @@ def pred_file_nn():
     response_data = jsonify(json_response)
     return response_data
 
+
 @swag_from("docs/text_lstm.yml", methods=['POST'])
 @app.route('/text-lstm', methods=['POST'])
 def pred_text_lstm():
 
-    text = cleansing.preprocessing( request.form.get('text'))    
+    text = cleansing.preprocessing(request.form.get('text'))
 
-    # TODO: ADD MODEL & PREDICT 
+    # TODO: ADD MODEL & PREDICT
     json_response = {
         'status_code': 200,
         'description': "Prediksi Sentimen",
@@ -123,7 +125,7 @@ def pred_file_lstm():
     for text in texts:
         cleaned_text.append(cleansing.preprocessing(text))
 
-    # TODO: ADD MODEL & PREDICT 
+    # TODO: ADD MODEL & PREDICT
 
     json_response = {
         'status_code': 200,
