@@ -1,11 +1,9 @@
-import re
-
 import pandas as pd
 from flask import Flask, jsonify, request
-from terbilang import Terbilang
 from flasgger import LazyJSONEncoder, LazyString, Swagger, swag_from
 
 import cleansing
+import nn
 
 app = Flask(__name__)
 
@@ -51,13 +49,12 @@ def pred_text_nn():
 
     text = cleansing.preprocessing(request.form.get('text'))    
 
-    # TODO: ADD MODEL & PREDICT 
-
+    pred = nn.predict_sentiment(text)
 
     json_response = {
         'status_code': 200,
-        'description': "Prediksi Sentimen",
-        'data': text,
+        'description': 'Prediksi Sentimen untuk ' + request.form.get('text'),
+        'data': pred,
     }
 
     response_data = jsonify(json_response)
@@ -74,20 +71,18 @@ def pred_file_nn():
     # Import file csv ke Pandas
     df = pd.read_csv(file, encoding="latin-1")
 
-    # Ambil teks yang akan diproses dalam format list
-    texts = df["text"].to_list()
 
     # Lakukan cleansing pada teks
-    cleaned_text = []
-    for text in texts:
-        cleaned_text.append(cleansing.preprocessing(text))
+    df['text_preprocessed'] = df['text'].apply(cleansing.preprocessing)
+    # predict
+    df['predicted_sentiment'] = df['text_preprocessed'].apply(nn.predict_sentiment)
 
-    # TODO: ADD MODEL & PREDICT 
+    pred = list(zip(df['text'], df['predicted_sentiment']))
 
     json_response = {
         'status_code': 200,
-        'description': "Teks yang sudah diproses",
-        'data': cleaned_text,
+        'description': "Prediksi Sentimen",
+        'data': pred,
     }
 
     response_data = jsonify(json_response)
