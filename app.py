@@ -1,11 +1,26 @@
 import pandas as pd
+import numpy as np
 from flask import Flask, jsonify, request
 from flasgger import LazyJSONEncoder, LazyString, Swagger, swag_from
-
-import cleansing
+from tensorflow.keras.preprocessing.text import Tokenizer
+from keras_preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import load_model
+import pickle
+import cleansing 
+import cleansing_NoStopword
 import nn
 
 app = Flask(__name__)
+
+max_features = 100000
+tokenizer = Tokenizer(num_words=max_features,split=' ')
+
+sentiment_label = ['negative','neutral','positive']
+
+with open('resource/model_lstm/word2vec_NoStopWord/x_pad_sequences.pickle','rb') as handle:
+    padded_sequences = pickle.load(handle)
+
+model_lstm = load_model('resource/model_lstm/word2vec_NoStopWord/model.h5')
 
 app.json_encoder = LazyJSONEncoder
 swagger_template = dict(
@@ -94,13 +109,23 @@ def pred_file_nn():
 @app.route('/text-lstm', methods=['POST'])
 def pred_text_lstm():
 
-    text = cleansing.preprocessing(request.form.get('text'))
+    real_text = request.form.get('text')
+    text = cleansing_NoStopword.preprocessing(real_text)   
+    #predict
+    print(model_lstm.summary())
+    tokenizer.fit_on_texts(text)
+    feature = tokenizer.texts_to_sequences(text)
+    feature = pad_sequences(feature,maxlen=padded_sequences.shape[1])
+    predict = model_lstm.predict(feature)
+    sentiment = sentiment_label[np.argmax(predict[0])]
 
-    # TODO: ADD MODEL & PREDICT
     json_response = {
         'status_code': 200,
         'description': "Prediksi Sentimen",
-        'data': text,
+        'data': {
+            'text': real_text,
+            'sentiment':sentiment
+        },
     }
 
     response_data = jsonify(json_response)
@@ -111,26 +136,32 @@ def pred_text_lstm():
 @app.route('/file-lstm', methods=['POST'])
 def pred_file_lstm():
 
-    # Uploaded file
+    #upload file
     file = request.files.getlist('file')[0]
 
     # Import file csv ke Pandas
-    df = pd.read_csv(file, encoding="latin-1")
+    df = pd.read_csv(file, encoding='ISO-8859-1')
 
     # Ambil teks yang akan diproses dalam format list
-    texts = df["text"].to_list()
-
+    texts = df["text"].apply(cleansing_NoStopword.preprocessing).tolist()
     # Lakukan cleansing pada teks
-    cleaned_text = []
-    for text in texts:
-        cleaned_text.append(cleansing.preprocessing(text))
 
     # TODO: ADD MODEL & PREDICT
+    tokenizer.fit_on_texts(texts)
+    feature = tokenizer.texts_to_sequences(texts)
+    feature = pad_sequences(feature, maxlen=padded_sequences.shape[1])
+
+    # Prediksi sentimen menggunakan model LSTM
+    predict = model_lstm.predict(feature)
+    sentiments = [sentiment_label[np.argmax(pred)] for pred in predict]
+
+    # Gabungkan teks awal dengan hasil prediksi
+    result = list(zip(df["text"], sentiments))
 
     json_response = {
         'status_code': 200,
         'description': "Teks yang sudah diproses",
-        'data': cleaned_text,
+        'data': result,
     }
 
     response_data = jsonify(json_response)
