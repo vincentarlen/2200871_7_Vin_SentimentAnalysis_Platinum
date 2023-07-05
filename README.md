@@ -29,7 +29,7 @@ This repository contains code for a Sentiment Analysis API using Flask. The API 
 Start the Flask server:
    ```bash
    python app.py
-The server will start running at http://localhost:5000.
+   The server will start running at http://localhost:5000.
 
 Open your web browser and go to http://localhost:5000/docs to view the API documentation.
 
