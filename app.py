@@ -17,10 +17,10 @@ tokenizer = Tokenizer(num_words=max_features,split=' ')
 
 sentiment_label = ['negative','neutral','positive']
 
-with open('resource/model_lstm/word2vec_NoStopWord/x_pad_sequences.pickle','rb') as handle:
+with open('resource/model_lstm/bow/x_pad_sequences.pickle','rb') as handle:
     padded_sequences = pickle.load(handle)
 
-model_lstm = load_model('resource/model_lstm/word2vec_NoStopWord/model.h5')
+model_lstm = load_model('resource/model_lstm/bow/model.h5')
 
 app.json_encoder = LazyJSONEncoder
 swagger_template = dict(
@@ -140,20 +140,22 @@ def pred_file_lstm():
     file = request.files.getlist('file')[0]
 
     # Import file csv ke Pandas
-    df = pd.read_csv(file, encoding='ISO-8859-1')
+    df = pd.read_csv(file, encoding='ISO-8859-1', delimiter="\t", names=['text', 'sentiment'])
 
     # Ambil teks yang akan diproses dalam format list
     texts = df["text"].apply(cleansing_NoStopword.preprocessing).tolist()
-    # Lakukan cleansing pada teks
 
-    # TODO: ADD MODEL & PREDICT
+    # Lakukan cleansing pada teks
     tokenizer.fit_on_texts(texts)
-    feature = tokenizer.texts_to_sequences(texts)
-    feature = pad_sequences(feature, maxlen=padded_sequences.shape[1])
+    features = tokenizer.texts_to_sequences(texts)
+    features = pad_sequences(features, maxlen=padded_sequences.shape[1])
+
+    # Reshape the input data to match the model's expected shape
+    features = np.expand_dims(features, axis=1)
 
     # Prediksi sentimen menggunakan model LSTM
-    predict = model_lstm.predict(feature)
-    sentiments = [sentiment_label[np.argmax(pred)] for pred in predict]
+    predicts = model_lstm.predict(features)
+    sentiments = [sentiment_label[np.argmax(pred)] for pred in predicts]
 
     # Gabungkan teks awal dengan hasil prediksi
     result = list(zip(df["text"], sentiments))
