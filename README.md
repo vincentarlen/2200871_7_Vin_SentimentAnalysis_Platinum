@@ -29,16 +29,17 @@ This repository contains code for a Sentiment Analysis API using Flask. The API 
 Start the Flask server:
    ```bash
    python app.py
-   The server will start running at http://localhost:5000.
+The server will start running at http://localhost:5000.
 
 Open your web browser and go to http://localhost:5000/docs to view the API documentation.
 
 Use the available endpoints to make predictions:
 
-**/text-nn**: Predict sentiment for a single text using a neural network model.
-**/file-nn**: Predict sentiment for multiple texts in a file using a neural network model.
-**/text-lstm**: Predict sentiment for a single text using an LSTM model.
-**/file-lstm**: Predict sentiment for multiple texts in a file using an LSTM model.
+- **/text-nn**: Predict sentiment for a single text using a neural network model.
+- **/file-nn**: Predict sentiment for multiple texts in a file using a neural network model.
+- **/text-lstm**: Predict sentiment for a single text using an LSTM model.
+- **/file-lstm**: Predict sentiment for multiple texts in a file using an LSTM model.
+
 Follow the API documentation for each endpoint to provide the required input parameters.
 
 ## Model and Data
