@@ -116,6 +116,7 @@ def pred_text_lstm():
     tokenizer.fit_on_texts(text)
     feature = tokenizer.texts_to_sequences(text)
     feature = pad_sequences(feature,maxlen=padded_sequences.shape[1])
+    feature = np.expand_dims(feature, axis=1)
     predict = model_lstm.predict(feature)
     sentiment = sentiment_label[np.argmax(predict[0])]
 
@@ -140,7 +141,7 @@ def pred_file_lstm():
     file = request.files.getlist('file')[0]
 
     # Import file csv ke Pandas
-    df = pd.read_csv(file, encoding='ISO-8859-1', delimiter="\t", names=['text', 'sentiment'])
+    df = pd.read_csv(file, encoding='ISO-8859-1')
 
     # Ambil teks yang akan diproses dalam format list
     texts = df["text"].apply(cleansing_NoStopword.preprocessing).tolist()
